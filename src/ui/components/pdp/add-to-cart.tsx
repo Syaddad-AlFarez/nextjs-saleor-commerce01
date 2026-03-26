@@ -12,7 +12,6 @@ interface AddToCartProps {
 	discountPercent?: number | null;
 	disabled?: boolean;
 	disabledReason?: "no-selection" | "out-of-stock";
-	// Tambahan Props khusus untuk GTM Analytics
 	productId?: string;
 	productName?: string;
 	priceValue?: number;
@@ -43,8 +42,9 @@ function AddToCartButton({
 			size="lg"
 			disabled={disabled || pending}
 			onClick={() => {
-				// Tembakkan event GTM HANYA jika tombol aktif dan tidak sedang loading
-				if (!disabled && !pending && onClick) {
+				// Hapus pengecekan pending di sini agar form tidak memblokir GTM
+				console.log("🖱️ [DEBUG] Tombol ditekan!");
+				if (!disabled && onClick) {
 					onClick();
 				}
 			}}
@@ -67,8 +67,10 @@ export function AddToCart({
 	priceValue = 0,
 	currency = "USD",
 }: AddToCartProps) {
-	// Fungsi utama yang membungkus data produk ke format E-commerce standar GTM
 	const fireGTMEvent = () => {
+		console.log(`🔥 [DEBUG] Mengirim data ke GTM untuk produk: ${productName} - Harga: ${priceValue}`);
+
+		// Menggunakan metode bawaan Next.js
 		sendGTMEvent({
 			event: "add_to_cart",
 			ecommerce: {
@@ -84,6 +86,19 @@ export function AddToCart({
 				],
 			},
 		});
+
+		// Tembakan cadangan (Fallback) jika sendGTMEvent terlambat
+		if (typeof window !== "undefined") {
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({
+				event: "add_to_cart_fallback",
+				ecommerce: {
+					currency: currency,
+					value: priceValue,
+					items: [{ item_id: productId, item_name: productName, price: priceValue, quantity: 1 }],
+				},
+			});
+		}
 	};
 
 	return (
@@ -100,7 +115,6 @@ export function AddToCart({
 				)}
 			</div>
 
-			{/* Tombol dengan fungsi GTM */}
 			<AddToCartButton disabled={disabled} disabledReason={disabledReason} onClick={fireGTMEvent} />
 
 			<div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted-foreground">
@@ -109,13 +123,6 @@ export function AddToCart({
 						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
 					</svg>
 					Secure checkout
-				</span>
-				<span className="flex items-center gap-1.5">
-					<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-						<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-						<path d="M9 22V12h6v10" />
-					</svg>
-					Free delivery over €100
 				</span>
 			</div>
 		</div>
