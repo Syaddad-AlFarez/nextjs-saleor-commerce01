@@ -4,6 +4,7 @@ import { useFormStatus } from "react-dom";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/ui/components/ui/button";
 import { cn } from "@/lib/utils";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 interface AddToCartProps {
 	price: string;
@@ -11,14 +12,21 @@ interface AddToCartProps {
 	discountPercent?: number | null;
 	disabled?: boolean;
 	disabledReason?: "no-selection" | "out-of-stock";
+	// Tambahan Props khusus untuk GTM Analytics
+	productId?: string;
+	productName?: string;
+	priceValue?: number;
+	currency?: string;
 }
 
 function AddToCartButton({
 	disabled,
 	disabledReason,
+	onClick,
 }: {
 	disabled?: boolean;
 	disabledReason?: "no-selection" | "out-of-stock";
+	onClick?: () => void;
 }) {
 	const { pending } = useFormStatus();
 
@@ -29,13 +37,17 @@ function AddToCartButton({
 		return "Select options";
 	};
 
-	// Simple, clean - no success state needed
-	// The cart badge/drawer updating IS the feedback (like Apple)
 	return (
 		<Button
 			type="submit"
 			size="lg"
 			disabled={disabled || pending}
+			onClick={() => {
+				// Tembakkan event GTM HANYA jika tombol aktif dan tidak sedang loading
+				if (!disabled && !pending && onClick) {
+					onClick();
+				}
+			}}
 			className={cn("h-14 w-full text-base font-medium transition-all duration-200", pending && "opacity-80")}
 		>
 			<ShoppingBag className={cn("mr-2 h-5 w-5 transition-transform", pending && "scale-90")} />
@@ -50,10 +62,32 @@ export function AddToCart({
 	discountPercent,
 	disabled = false,
 	disabledReason,
+	productId = "unknown_id",
+	productName = "unknown_product",
+	priceValue = 0,
+	currency = "USD",
 }: AddToCartProps) {
+	// Fungsi utama yang membungkus data produk ke format E-commerce standar GTM
+	const fireGTMEvent = () => {
+		sendGTMEvent({
+			event: "add_to_cart",
+			ecommerce: {
+				currency: currency,
+				value: priceValue,
+				items: [
+					{
+						item_id: productId,
+						item_name: productName,
+						price: priceValue,
+						quantity: 1,
+					},
+				],
+			},
+		});
+	};
+
 	return (
 		<div className="space-y-4">
-			{/* Price Display */}
 			<div className="flex items-baseline gap-3">
 				<span className="text-2xl font-semibold tracking-tight">{price}</span>
 				{compareAtPrice && (
@@ -66,10 +100,9 @@ export function AddToCart({
 				)}
 			</div>
 
-			{/* Add to Cart Button */}
-			<AddToCartButton disabled={disabled} disabledReason={disabledReason} />
+			{/* Tombol dengan fungsi GTM */}
+			<AddToCartButton disabled={disabled} disabledReason={disabledReason} onClick={fireGTMEvent} />
 
-			{/* Trust Signals */}
 			<div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted-foreground">
 				<span className="flex items-center gap-1.5">
 					<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
