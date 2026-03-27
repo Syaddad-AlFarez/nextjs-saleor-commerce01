@@ -146,6 +146,11 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 					discountPercent={discountPercent}
 					disabled={isAddToCartDisabled}
 					disabledReason={disabledReason}
+					// Tambahkan data di bawah ini:
+					productId={product.id}
+					productName={product.name}
+					numericPrice={product.pricing?.priceRange?.start?.gross?.amount}
+					currency={product.pricing?.priceRange?.start?.gross?.currency}
 				/>
 
 				{/* Sticky Add to Cart Bar (Mobile) */}

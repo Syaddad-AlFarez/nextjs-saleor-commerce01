@@ -11,14 +11,27 @@ interface AddToCartProps {
 	discountPercent?: number | null;
 	disabled?: boolean;
 	disabledReason?: "no-selection" | "out-of-stock";
+	// Tambahan props untuk kebutuhan GTM / GA4
+	productId?: string;
+	productName?: string;
+	numericPrice?: number;
+	currency?: string;
 }
 
 function AddToCartButton({
 	disabled,
 	disabledReason,
+	productId,
+	productName,
+	numericPrice,
+	currency = "IDR", // Sesuaikan default currency jika perlu
 }: {
 	disabled?: boolean;
 	disabledReason?: "no-selection" | "out-of-stock";
+	productId?: string;
+	productName?: string;
+	numericPrice?: number;
+	currency?: string;
 }) {
 	const { pending } = useFormStatus();
 
@@ -29,13 +42,36 @@ function AddToCartButton({
 		return "Select options";
 	};
 
-	// Simple, clean - no success state needed
-	// The cart badge/drawer updating IS the feedback (like Apple)
+	// Fungsi untuk push data ke dataLayer
+	const handleAddToCartClick = () => {
+		if (disabled || pending) return;
+
+		if (typeof window !== "undefined") {
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({
+				event: "add_to_cart",
+				ecommerce: {
+					currency: currency,
+					value: numericPrice,
+					items: [
+						{
+							item_id: productId,
+							item_name: productName,
+							price: numericPrice,
+							quantity: 1,
+						},
+					],
+				},
+			});
+		}
+	};
+
 	return (
 		<Button
 			type="submit"
 			size="lg"
 			disabled={disabled || pending}
+			onClick={handleAddToCartClick}
 			className={cn("h-14 w-full text-base font-medium transition-all duration-200", pending && "opacity-80")}
 		>
 			<ShoppingBag className={cn("mr-2 h-5 w-5 transition-transform", pending && "scale-90")} />
@@ -50,6 +86,10 @@ export function AddToCart({
 	discountPercent,
 	disabled = false,
 	disabledReason,
+	productId,
+	productName,
+	numericPrice,
+	currency,
 }: AddToCartProps) {
 	return (
 		<div className="space-y-4">
@@ -67,7 +107,14 @@ export function AddToCart({
 			</div>
 
 			{/* Add to Cart Button */}
-			<AddToCartButton disabled={disabled} disabledReason={disabledReason} />
+			<AddToCartButton
+				disabled={disabled}
+				disabledReason={disabledReason}
+				productId={productId}
+				productName={productName}
+				numericPrice={numericPrice}
+				currency={currency}
+			/>
 
 			{/* Trust Signals */}
 			<div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted-foreground">

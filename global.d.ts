@@ -37,3 +37,7 @@ interface JSON {
 interface Set<T> {
 	has(value: unknown): value is T;
 }
+
+interface Window {
+	dataLayer: any[];
+}
