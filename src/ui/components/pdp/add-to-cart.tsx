@@ -43,8 +43,6 @@ function AddToCartButton({
 			disabled={disabled || pending}
 			onClick={() => {
 				// Hapus pengecekan pending di sini agar form tidak memblokir GTM
-				console.log("test add to bag fire");
-
 				console.log("🖱️ [DEBUG] Tombol ditekan!");
 				if (!disabled && onClick) {
 					onClick();
@@ -117,7 +115,7 @@ export function AddToCart({
 				)}
 			</div>
 
-			<AddToCartButton disabled={disabled} disabledReason={disabledReason} onClick={() => alert("test")} />
+			<AddToCartButton disabled={disabled} disabledReason={disabledReason} onClick={fireGTMEvent} />
 
 			<div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted-foreground">
 				<span className="flex items-center gap-1.5">
