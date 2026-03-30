@@ -81,18 +81,26 @@ function AddToCartButton({
 		if (typeof window !== "undefined") {
 			window.dataLayer = window.dataLayer || [];
 
-			// Buat object dasar (Native Dimensions GA4)
+			// Buat object dasar (Native Dimensions GA4) tanpa item_variant terlebih dahulu
 			const itemToCart: any = {
 				item_id: variantId || productId,
 				item_name: productName,
 				price: numericPrice,
 				quantity: 1,
 				item_category: categoryName,
-				item_variant: variantName, // Umumnya berisi string lengkap misal "Black / M"
 			};
 
+			// Validasi: Hanya kirim item_variant jika nilainya valid
+			if (
+				variantName &&
+				variantName !== variantId &&
+				variantName !== productName &&
+				!variantName.toLowerCase().includes("default")
+			) {
+				itemToCart.item_variant = variantName;
+			}
+
 			// Menggabungkan Atribut Dinamis ke dalam Object (Custom Dimensions)
-			// Ini akan otomatis memasukkan atribut apapun yang ada (contoh: color: "Red", shoe_size: "42")
 			if (variantAttributes) {
 				Object.assign(itemToCart, variantAttributes);
 			}
