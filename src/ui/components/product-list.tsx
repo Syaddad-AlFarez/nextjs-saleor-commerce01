@@ -1,7 +1,36 @@
+"use client";
+
+import { useEffect } from "react";
 import { ProductElement } from "./product-element";
 import { type ProductListItemFragment } from "@/gql/graphql";
 
 export const ProductList = ({ products }: { products: readonly ProductListItemFragment[] }) => {
+	useEffect(() => {
+		if (typeof window !== "undefined" && products.length > 0) {
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({ ecommerce: null });
+			window.dataLayer.push({
+				event: "view_item_list",
+				ecommerce: {
+					item_list_name: "Product List",
+					items: products.map((product, index) => {
+						// Ambil harga dari struktur data GraphQL Saleor
+						const priceInfo = product.pricing?.priceRange?.start?.gross;
+
+						return {
+							item_id: product.id,
+							item_name: product.name,
+							price: priceInfo?.amount || 0,
+							currency: priceInfo?.currency || "USD",
+							index: index + 1, // Posisi dimulai dari 1
+							item_category: product.category?.name || undefined,
+						};
+					}),
+				},
+			});
+		}
+	}, [products]);
+
 	return (
 		<ul
 			role="list"
@@ -14,6 +43,7 @@ export const ProductList = ({ products }: { products: readonly ProductListItemFr
 					product={product}
 					priority={index < 2}
 					loading={index < 3 ? "eager" : "lazy"}
+					position={index + 1} // Kirim urutan produk ke komponen anak
 				/>
 			))}
 		</ul>

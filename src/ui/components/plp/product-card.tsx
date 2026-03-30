@@ -37,10 +37,36 @@ export interface ProductCardData {
 interface ProductCardProps {
 	product: ProductCardData;
 	priority?: boolean;
+	position: number;
 }
 
-export function ProductCard({ product, priority = false }: ProductCardProps) {
+export function ProductCard({ product, priority = false, position }: ProductCardProps) {
 	const canQuickAdd = !product.hasVariants && product.onQuickAdd;
+
+	// Tambahkan fungsi ini untuk mengirim event select_item
+	const handleSelectItem = () => {
+		if (typeof window !== "undefined") {
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({ ecommerce: null }); // Bersihkan object ecommerce sebelumnya
+			window.dataLayer.push({
+				event: "select_item",
+				ecommerce: {
+					item_list_name: "Product Grid", // Bisa disesuaikan
+					items: [
+						{
+							item_id: product.id,
+							item_name: product.name,
+							price: product.price,
+							currency: product.currency,
+							index: position,
+							item_brand: product.brand || undefined,
+							item_category: product.category?.name || undefined,
+						},
+					],
+				},
+			});
+		}
+	};
 
 	const handleQuickAdd = (e: React.MouseEvent) => {
 		e.preventDefault();
@@ -57,7 +83,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
 	return (
 		<article className="group">
-			<Link href={product.href} className="block">
+			<Link href={product.href} className="block" onClick={handleSelectItem}>
 				{/* Image Container */}
 				<div className="relative mb-4 aspect-[3/4] overflow-hidden rounded-xl bg-secondary">
 					{/* Primary Image */}
