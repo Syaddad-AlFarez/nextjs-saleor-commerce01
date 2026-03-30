@@ -90,12 +90,17 @@ function AddToCartButton({
 				item_category: categoryName,
 			};
 
-			// Validasi: Hanya kirim item_variant jika nilainya valid
+			const isDuplicateOfAttribute = variantAttributes
+				? Object.values(variantAttributes).includes(variantName)
+				: false;
+
+			// Validasi: Hanya kirim item_variant jika nilainya valid dan tidak duplikat dengan atribut
 			if (
 				variantName &&
 				variantName !== variantId &&
 				variantName !== productName &&
-				!variantName.toLowerCase().includes("default")
+				!variantName.toLowerCase().includes("default") &&
+				!isDuplicateOfAttribute // Tambahkan pengecekan ini
 			) {
 				itemToCart.item_variant = variantName;
 			}
