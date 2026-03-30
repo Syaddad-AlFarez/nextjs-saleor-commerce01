@@ -34,6 +34,32 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 	const selectedVariantID = variantParam || (variants.length === 1 ? variants[0].id : undefined);
 	const selectedVariant = variants.find(({ id }) => id === selectedVariantID);
 
+	// ==========================================
+	// 1. TAMBAHKAN KODE INI: Ekstrak atribut varian
+	// Kode ini akan mengubah data atribut Saleor menjadi object sederhana.
+	// Contoh hasilnya: { color: "Red", size: "XL", audio_quality: "High" }
+	// ==========================================
+	const allAttributes = [
+		...(selectedVariant?.selectionAttributes || []),
+		...(selectedVariant?.nonSelectionAttributes || []),
+	];
+
+	const variantAttributes = allAttributes.reduce(
+		(acc, attr) => {
+			const key = attr.attribute.name;
+			const value = attr.values[0]?.name;
+
+			if (key && value) {
+				// Format key menjadi huruf kecil dan ganti spasi dengan underscore (standar GTM)
+				const formattedKey = key.toLowerCase().replace(/\s+/g, "_");
+				acc[formattedKey] = value;
+			}
+			return acc;
+		},
+		{} as Record<string, string>,
+	);
+	// ==========================================
+
 	// Check availability
 	const isAvailable = variants.some((variant) => variant.quantityAvailable);
 
@@ -151,6 +177,10 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 					productName={product.name}
 					numericPrice={product.pricing?.priceRange?.start?.gross?.amount}
 					currency={product.pricing?.priceRange?.start?.gross?.currency}
+					variantId={selectedVariantID}
+					variantName={selectedVariant?.name}
+					variantAttributes={variantAttributes}
+					categoryName={product.category?.name}
 				/>
 
 				{/* Sticky Add to Cart Bar (Mobile) */}
