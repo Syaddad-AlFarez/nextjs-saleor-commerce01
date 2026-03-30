@@ -17,6 +17,10 @@ export const ProductList = ({ products }: { products: readonly ProductListItemFr
 						// Ambil harga dari struktur data GraphQL Saleor
 						const priceInfo = product.pricing?.priceRange?.start?.gross;
 
+						// Ekstrak atribut brand
+						const brandAttribute = product.attributes?.find((attr) => attr.attribute.slug === "brand");
+						const actualBrand = brandAttribute?.values?.[0]?.name;
+
 						return {
 							item_id: product.id,
 							item_name: product.name,
@@ -24,6 +28,7 @@ export const ProductList = ({ products }: { products: readonly ProductListItemFr
 							currency: priceInfo?.currency || "USD",
 							index: index + 1, // Posisi dimulai dari 1
 							item_category: product.category?.name || undefined,
+							item_brand: actualBrand || "Saleor Loom", // Gunakan actualBrand yang ditarik dari backend
 						};
 					}),
 				},
@@ -43,7 +48,7 @@ export const ProductList = ({ products }: { products: readonly ProductListItemFr
 					product={product}
 					priority={index < 2}
 					loading={index < 3 ? "eager" : "lazy"}
-					position={index + 1} // Kirim urutan produk ke komponen anak
+					position={index + 1} // Kirim urutan produk ke komponen anak (ProductElement)
 				/>
 			))}
 		</ul>

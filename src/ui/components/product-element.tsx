@@ -10,17 +10,21 @@ export function ProductElement({
 	product,
 	loading,
 	priority,
-	position, // 1. Tambahkan position di sini
+	position, // Menerima props position dari ProductList
 }: {
 	product: ProductListItemFragment;
 	loading: "eager" | "lazy";
 	priority?: boolean;
-	position: number; // 2. Definisikan tipe position
+	position: number; // Definisi tipe data position
 }) {
-	// 3. Buat fungsi untuk event select_item
+	// Fungsi untuk mengirim event select_item ke GTM
 	const handleSelectItem = () => {
 		if (typeof window !== "undefined") {
 			const priceInfo = product.pricing?.priceRange?.start?.gross;
+
+			// Ekstrak atribut brand agar selaras dengan data yang ada di view_item_list
+			const brandAttribute = product.attributes?.find((attr) => attr.attribute.slug === "brand");
+			const actualBrand = brandAttribute?.values?.[0]?.name;
 
 			window.dataLayer = window.dataLayer || [];
 			window.dataLayer.push({ ecommerce: null });
@@ -36,6 +40,7 @@ export function ProductElement({
 							currency: priceInfo?.currency || "USD",
 							index: position,
 							item_category: product.category?.name || undefined,
+							item_brand: actualBrand || "Saleor Loom", // Menggunakan nilai brand yang akurat
 						},
 					],
 				},
@@ -49,7 +54,7 @@ export function ProductElement({
 				href={`/products/${product.slug}`}
 				key={product.id}
 				prefetch={false}
-				onClick={handleSelectItem} // 4. Panggil fungsi di sini
+				onClick={handleSelectItem} // Menyematkan trigger event pada klik
 			>
 				<div>
 					{product?.thumbnail?.url && (

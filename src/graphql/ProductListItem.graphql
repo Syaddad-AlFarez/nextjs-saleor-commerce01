@@ -38,6 +38,16 @@ fragment ProductListItem on Product {
 		name
 		slug
 	}
+
+	attributes {
+		attribute {
+			slug
+		}
+		values {
+			name
+		}
+	}
+
 	thumbnail(size: 1024, format: WEBP) {
 		url
 		alt
