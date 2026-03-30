@@ -9,6 +9,8 @@ import { executePublicGraphQL } from "@/lib/graphql";
 import { ProductDetailsDocument, type ProductDetailsQuery } from "@/gql/graphql";
 import { buildPageMetadata, buildProductJsonLd } from "@/lib/seo";
 import { CACHE_PROFILES, applyCacheProfile } from "@/lib/cache-manifest";
+
+// Tambahkan di deretan import komponen UI lainnya (sekitar baris 11-17)
 import { Breadcrumbs } from "@/ui/components/breadcrumbs";
 import {
 	ProductGallery,
@@ -17,6 +19,7 @@ import {
 	VariantSectionSkeleton,
 	VariantSectionError,
 } from "@/ui/components/pdp";
+import { ViewItemTracker } from "@/ui/components/pdp/view-item-tracker"; // <--- Tambahkan baris ini
 
 // ============================================================================
 // Cached Data Fetching
@@ -156,6 +159,8 @@ async function ProductContent({
 	return (
 		<div className="flex min-h-screen flex-col bg-background">
 			{lcpImageUrl && <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />}
+
+			<ViewItemTracker product={product} selectedVariant={selectedVariant} channel={params.channel} />
 
 			{productJsonLd && (
 				<script
