@@ -34,11 +34,6 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 	const selectedVariantID = variantParam || (variants.length === 1 ? variants[0].id : undefined);
 	const selectedVariant = variants.find(({ id }) => id === selectedVariantID);
 
-	// ==========================================
-	// 1. TAMBAHKAN KODE INI: Ekstrak atribut varian
-	// Kode ini akan mengubah data atribut Saleor menjadi object sederhana.
-	// Contoh hasilnya: { color: "Red", size: "XL", audio_quality: "High" }
-	// ==========================================
 	const allAttributes = [
 		...(selectedVariant?.selectionAttributes || []),
 		...(selectedVariant?.nonSelectionAttributes || []),
@@ -58,7 +53,6 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 		},
 		{} as Record<string, string>,
 	);
-	// ==========================================
 
 	// Check availability
 	const isAvailable = variants.some((variant) => variant.quantityAvailable);
@@ -93,6 +87,11 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 					selectedVariant.pricing.priceUndiscounted.gross.currency,
 				)
 			: null;
+
+	const finalPrice =
+		selectedVariant?.pricing?.price?.gross?.amount ?? product.pricing?.priceRange?.start?.gross?.amount;
+	const finalCurrency =
+		selectedVariant?.pricing?.price?.gross?.currency ?? product.pricing?.priceRange?.start?.gross?.currency;
 
 	// Server action for adding to cart
 	async function addToCart() {
@@ -172,14 +171,11 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 					discountPercent={discountPercent}
 					disabled={isAddToCartDisabled}
 					disabledReason={disabledReason}
-					// Tambahkan data di bawah ini:
 					productId={product.id}
 					productName={product.name}
-					numericPrice={currentPrice ?? product.pricing?.priceRange?.start?.gross?.amount}
-					currency={
-						selectedVariant?.pricing?.price?.gross?.currency ??
-						product.pricing?.priceRange?.start?.gross?.currency
-					}
+					// Gunakan variabel finalPrice dan finalCurrency di sini
+					numericPrice={finalPrice}
+					currency={finalCurrency}
 					variantId={selectedVariantID}
 					variantName={selectedVariant?.name}
 					variantAttributes={variantAttributes}
