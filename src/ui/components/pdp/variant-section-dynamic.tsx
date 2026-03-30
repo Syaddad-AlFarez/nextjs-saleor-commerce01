@@ -175,8 +175,11 @@ export async function VariantSectionDynamic({ product, channel, searchParams }: 
 					// Tambahkan data di bawah ini:
 					productId={product.id}
 					productName={product.name}
-					numericPrice={product.pricing?.priceRange?.start?.gross?.amount}
-					currency={product.pricing?.priceRange?.start?.gross?.currency}
+					numericPrice={currentPrice ?? product.pricing?.priceRange?.start?.gross?.amount}
+					currency={
+						selectedVariant?.pricing?.price?.gross?.currency ??
+						product.pricing?.priceRange?.start?.gross?.currency
+					}
 					variantId={selectedVariantID}
 					variantName={selectedVariant?.name}
 					variantAttributes={variantAttributes}
