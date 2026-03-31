@@ -8,6 +8,7 @@ import { useSaleorAuthContext } from "@saleor/auth-sdk/react";
 import { Button } from "@/ui/components/ui/button";
 import { Input } from "@/ui/components/ui/input";
 import { Label } from "@/ui/components/ui/label";
+import { sendGTMEvent } from "@next/third-parties/google"; // <-- 1. Import GTM event
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -57,6 +58,16 @@ export function LoginMode() {
 			}
 
 			if (result.data?.tokenCreate?.token) {
+				// <-- 2. Kirim event GTM saat login berhasil
+				// Kita mengambil user ID dari respons API jika tersedia,
+				// menggunakan type assertion (any) untuk menghindari error TypeScript jika type user belum terdefinisi di SDK
+				const user_id = (result.data.tokenCreate as any).user?.id;
+
+				sendGTMEvent({
+					event: "login",
+					user_id: user_id,
+				});
+
 				router.push(`/${params.channel}`);
 				router.refresh();
 			}
