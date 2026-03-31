@@ -8,7 +8,7 @@ import { useSaleorAuthContext } from "@saleor/auth-sdk/react";
 import { Button } from "@/ui/components/ui/button";
 import { Input } from "@/ui/components/ui/input";
 import { Label } from "@/ui/components/ui/label";
-import { sendGTMEvent } from "@next/third-parties/google"; // <-- 1. Import GTM event
+import { sendGTMEvent } from "@next/third-parties/google"; // Import GTM Event
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -58,18 +58,31 @@ export function LoginMode() {
 			}
 
 			if (result.data?.tokenCreate?.token) {
-				// <-- 2. Kirim event GTM saat login berhasil
-				// Kita mengambil user ID dari respons API jika tersedia,
-				// menggunakan type assertion (any) untuk menghindari error TypeScript jika type user belum terdefinisi di SDK
-				const user_id = (result.data.tokenCreate as any).user?.id;
+				const token = result.data.tokenCreate.token;
+				let userId = "";
 
+				// Ekstrak dan decode JWT Token untuk mendapatkan user_id dari Saleor
+				try {
+					const payloadBase64 = token.split(".")[1];
+					// Menggunakan Type Assertion agar TypeScript mengenali properti user_id
+					const decodedPayload = JSON.parse(atob(payloadBase64)) as { user_id: string };
+					userId = decodedPayload.user_id;
+				} catch (err) {
+					console.error("Gagal mengekstrak ID dari token:", err);
+				}
+
+				// Kirim event beserta user ID ke Data Layer GTM
 				sendGTMEvent({
 					event: "login",
-					user_id: user_id,
+					user_id: userId,
+					method: "Saleor",
 				});
 
-				router.push(`/${params.channel}`);
-				router.refresh();
+				// Jeda 500ms agar GTM menangkap event sebelum Next.js melakukan redirect
+				setTimeout(() => {
+					router.push(`/${params.channel}`);
+					router.refresh();
+				}, 500);
 			}
 		} catch {
 			setError("An error occurred. Please try again.");
