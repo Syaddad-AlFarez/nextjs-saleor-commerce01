@@ -1,5 +1,6 @@
 "use client";
 
+import { sendGTMEvent } from "@next/third-parties/google";
 import { SaleorAuthProvider, useAuthChange } from "@saleor/auth-sdk/react";
 import { invariant } from "ts-invariant";
 import { createSaleorAuthClient } from "@saleor/auth-sdk";
@@ -84,10 +85,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	invariant(saleorApiUrl, "Missing NEXT_PUBLIC_SALEOR_API_URL env variable");
 
 	const [urqlClient, setUrqlClient] = useState<Client>(() => makeUrqlClient());
+
 	useAuthChange({
 		saleorApiUrl,
 		onSignedOut: () => {
 			setUrqlClient(makeUrqlClient());
+
+			// --- TAMBAHKAN KODE INI ---
+			// Mengirimkan event logout dan mereset user_id menjadi null sesuai standar GA4
+			sendGTMEvent({
+				event: "logout",
+				user_id: null,
+			});
+			// -------------------------
 		},
 		onSignedIn: () => {
 			setUrqlClient(makeUrqlClient());
